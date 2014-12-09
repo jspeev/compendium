@@ -1,0 +1,17 @@
+'use strict';
+
+/**
+ * Module dependencies.
+ */
+var mongoose = require('mongoose'),
+	Schema = mongoose.Schema;
+
+/**
+ * Chatroom Schema
+ */
+var ChatroomSchema = new Schema({
+	// Chatroom model fields   
+	// ...
+});
+
+mongoose.model('Chatroom', ChatroomSchema);

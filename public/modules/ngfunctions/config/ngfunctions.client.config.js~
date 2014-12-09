@@ -1,0 +1,9 @@
+'use strict';
+
+// Ngfunctions module config
+angular.module('ngfunctions').run(['Menus',
+	function(Menus) {
+		// Config logic
+		// ...
+	}
+]);

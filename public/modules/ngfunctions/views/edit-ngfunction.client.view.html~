@@ -1,0 +1,57 @@
+<section data-ng-controller="NgfunctionsController" data-ng-init="findOne()">
+	<div class="page-header">
+		<h1>Edit Ng Function</h1>
+	</div>
+	<div class="col-md-12">
+		<form name="compendiumForm" class="form-horizontal" data-ng-submit="update(compendiumForm.$valid)" novalidate>
+			<fieldset>
+				<div class="form-group" ng-class="{ 'has-error' : submitted && compendiumForm.title.$invalid}">
+					<label class="control-label" for="title">Title</label>
+					<div class="controls">
+						<input name="title" type="text" data-ng-model="compendium.title" id="title" class="form-control" placeholder="Title" required>
+					</div>
+					<div ng-show="submitted && compendiumForm.title.$invalid" class="help-block">
+						<p ng-show="compendiumForm.title.$error.required" class="text-danger">Title is required</p>
+					</div>
+				</div>
+				
+				<div class="form-group" ng-class="{ 'has-error' : submitted && compendiumForm.type.$invalid}">
+					<label class="control-label" for="type">Type</label>
+					<div class="controls">
+						<input name="type" type="text" data-ng-model="compendium.type" id="type" class="form-control" placeholder="ngfunction" required>
+					</div>
+					<div ng-show="submitted && compendiumForm.type.$invalid" class="help-block">
+						<p ng-show="compendiumForm.type.$error.required" class="text-danger">Type is required</p>
+					</div>
+				</div>
+				
+				
+				<div class="form-group" ng-class="{ 'has-error' : submitted && compendiumForm.description.$invalid}">
+					<label class="control-label" for="description">Description</label>
+					<div class="controls">
+						<textarea name="description" data-ng-model="compendium.description" id="description" class="form-control" cols="30" rows="10" placeholder="Description" required></textarea>
+					</div>
+					<div ng-show="submitted && compendiumForm.description.$invalid" class="help-block">
+						<p ng-show="compendiumForm.description.$error.required" class="text-danger">Description is required</p>
+					</div>
+				</div>				
+				
+				<div class="form-group" ng-class="{ 'has-error' : submitted && compendiumForm.content.$invalid}">
+					<label class="control-label" for="content">Content</label>
+					<div class="controls">
+						<textarea name="content" data-ng-model="compendium.content" id="content" class="form-control" cols="30" rows="10" placeholder="Content" required></textarea>
+					</div>
+					<div ng-show="submitted && compendiumForm.content.$invalid" class="help-block">
+						<p ng-show="compendiumForm.content.$error.required" class="text-danger">Content is required</p>
+					</div>
+				</div>
+				<div class="form-group">
+					<input type="submit" value="Update" class="btn btn-default">
+				</div>
+				<div data-ng-show="error" class="text-danger">
+					<strong data-ng-bind="error"></strong>
+				</div>
+			</fieldset>
+		</form>
+	</div>
+</section>

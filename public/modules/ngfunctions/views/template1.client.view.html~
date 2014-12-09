@@ -1,0 +1,3 @@
+<section data-ng-controller="Template1Controller">
+	This is the Template1
+</section>

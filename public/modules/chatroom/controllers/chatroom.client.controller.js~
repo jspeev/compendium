@@ -1,0 +1,9 @@
+'use strict';
+
+angular.module('chatroom').controller('ChatroomController', ['$scope','Socket',
+	function($scope,Socket) {
+		Socket.on('user.signedin', function(user) {
+		    console.log(user);
+		});
+	}
+]);

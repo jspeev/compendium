@@ -1,0 +1,29 @@
+<section data-ng-controller="NgfunctionsController" data-ng-init="findOne()">
+	<div class="page-header">
+		<h1 data-ng-bind="compendium.title"></h1>
+	</div>
+	<div class="pull-right" data-ng-show="authentication.user._id == compendium.user._id">
+		<a class="btn btn-primary" href="/#!/compendia/{{compendium._id}}/edit">
+			<i class="glyphicon glyphicon-edit"></i>
+		</a>
+		<a class="btn btn-primary" data-ng-click="remove();">
+			<i class="glyphicon glyphicon-trash"></i>
+		</a>
+	</div>
+	<small>
+		<em class="text-muted">
+			Posted on
+			<span data-ng-bind="compendium.created | date:'mediumDate'"></span>
+			by
+			<span data-ng-bind="compendium.user.displayName"></span>
+		</em>
+	</small>
+	<p class="lead" data-ng-bind="compendium.description"></p>
+	<direxample code="{{compendium.content}}"></direxample>
+	<br><br>
+	<small>
+		<div class="controls">
+			<textarea enabled="false" name="content" data-ng-model="compendium.content" id="content" class="form-control" cols="30" rows="10" placeholder="Content" required></textarea>
+		</div>
+	</small>
+</section>

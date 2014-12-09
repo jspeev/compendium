@@ -1,0 +1,123 @@
+'use strict';
+
+angular.module('ngfunctions').controller('NgfunctionsController', ['$scope', '$stateParams', '$location','$http', '$log', 'Authentication', 'Compendia','Socket',
+	function($scope, $stateParams, $location, $http,$log, Authentication, Compendia, Socket) {
+		
+		$scope.authentication = Authentication;
+		
+		/*
+		Socket.on('exports.create', function(body) {
+		    console.log(body);
+		});		
+		
+		//var socket = io.connect('http://localhost'); -- we have a service now
+		Socket.on('news', function (data) {
+		  console.log(data);
+		  Socket.emit('broadcast', { my: 'data' });
+		});
+
+		Socket.emit('broadcast', { my: 'data' });
+		console.log('wtf');		
+		
+		Socket.on('res',function(data){
+			console.log(data);
+		});
+		*/
+		
+		var username = 'Jonny';
+		
+		Socket.on('exports.newMessage.user'+username,function(body){
+			$log.log('whisper:',body);
+		});
+		
+		Socket.on('exports.newMessage.'+$stateParams.compendiumId, function(body) {
+		    $log.log('returned:',body);
+		});
+		
+		$scope.broadcastMessage = function(stTo,stMessage){
+			
+			if($stateParams.compendiumId){
+				
+				var js_data = {
+						'to':stTo,
+						'message':stMessage
+					};
+				
+				$http({
+				    method: 'POST',
+				    url: 'http://localhost:3000/compendia/'+$stateParams.compendiumId+'/broadcastMessage',
+				    data: js_data
+				})
+				.success(function(data,status) {
+					//DO NOTHING ON SUCCESS
+					//$log.info('status code:',status,data);
+				})
+				.error(function(data,status) {
+					$log.warn('error status code:',status);
+				});
+				
+			}
+			
+		};
+		
+		$scope.broadcastMessage('Tom','User entered socket range');
+
+		$scope.create = function() {
+			var compendium = new Compendia({
+				title: this.title,
+				type: this.type,
+				description: this.description,
+				content: this.content
+			});
+			compendium.$save(function(response) {
+				$location.path('compendia/' + response._id);
+				$scope.title = '';
+				$scope.content = '';
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		$scope.remove = function(compendium) {
+			
+			if (compendium) {
+				
+				compendium.$remove();
+
+				for (var i in $scope.compendia) {
+					if ($scope.compendia[i] === compendium) {
+						$scope.compendia.splice(i, 1);
+					}
+				}
+				
+			} else {
+				
+				$scope.compendium.$remove(function() {
+					$location.path('compendia');
+				});
+				
+			}
+		};
+
+		$scope.update = function() {
+			
+			var compendium = $scope.compendium;
+
+			compendium.$update(function() {
+				$location.path('compendia/' + compendium._id);
+			}, function(errorResponse) {
+				$scope.error = errorResponse.data.message;
+			});
+		};
+
+		$scope.find = function() {
+			$scope.compendia = Compendia.query();
+		};
+
+		$scope.findOne = function() {
+			$scope.compendium = Compendia.get({
+				compendiumId: $stateParams.compendiumId
+			});
+		};
+	}
+]);
