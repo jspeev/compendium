@@ -13,7 +13,3 @@
 .ng-valid.ng-dirty {
 	border-color: #78FA89;
 }
-
-.dropdown-toggle {
-		cursor:pointer;
-}

@@ -10,11 +10,17 @@ module.exports = function(app) {
 		.post(users.requiresLogin, chatrooms.create);
 	
 	app.route('/chatrooms/:chatroomId')
-		.get(chatrooms.read)
+		.get(users.requiresLogin,chatrooms.read)
 		.put(users.requiresLogin, chatrooms.hasAuthorization, chatrooms.update)
 		.delete(users.requiresLogin, chatrooms.hasAuthorization, chatrooms.delete);
-		//.transmit(users.requiresLogin, chatrooms.broadcastMessage)
-	
-	// Finish by binding the compendium middleware
+
+	app.route('/chatrooms/:chatroomId/broadcastMessage')
+		.post(chatrooms.broadcastMessage);
+		/*
+	app.route('/chatrooms/:chatroomId/userList')
+		.get(chatrooms.getUserList);
+*/
+	// Finish by binding the chatroom middleware
 	app.param('chatroomId', chatrooms.chatroomByID);
-};
+	
+}; 

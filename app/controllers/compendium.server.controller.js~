@@ -24,7 +24,7 @@ exports.broadcastMessage = function(req,res){
 	if(req.body.message === 'all'){
 		socketio.sockets.emit('exports.newMessage.'+req.compendium.id, req.body.message); // emit an event for all connected clients
 	}else{
-		socketio.sockets.emit('exports.newMessage.user'+req.body.to,req.body.message)l
+		socketio.sockets.emit('exports.newMessage.user'+req.body.to,req.body.message);
 	}
 	res.send('Server reached, attempting to emit broadcast');
 	

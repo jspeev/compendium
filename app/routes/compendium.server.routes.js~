@@ -6,6 +6,7 @@ var users = require('../../app/controllers/users.server.controller'),
 	compendia = require('../../app/controllers/compendium.server.controller');
 
 module.exports = function(app) {
+	
 	// Compendium Routes
 	app.route('/compendia')
 		.get(compendia.list)
@@ -16,7 +17,7 @@ module.exports = function(app) {
 		.put(users.requiresLogin, compendia.hasAuthorization, compendia.update)
 		.delete(users.requiresLogin, compendia.hasAuthorization, compendia.delete);
 		
-/*THIS WORKS HOLY SHIT -- using route for controller functionality
+/*THIS WORKS HOLY SHIT -- moving on to use route for controller functionality
 	app.post('/broadcastMessage', function (req, res) {
 		
 		console.log('express hit');

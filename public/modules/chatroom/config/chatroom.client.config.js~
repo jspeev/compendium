@@ -1,0 +1,9 @@
+'use strict';
+
+// Chatroom module config
+angular.module('chatroom').run(['Menus',
+	function(Menus) {
+		// Config logic
+		// ...
+	}
+]);

@@ -8,15 +8,7 @@ var mongoose = require('mongoose'),
 	Compendium = mongoose.model('Compendium'),
     _ = require('lodash');
 
-
-/*
-io.sockets.on('connection', function (socket) {
-  socket.emit('news', { hello: 'world' });
-  socket.on('broadcast', function (data) {
-    console.log(data);
-  });
-});
-*/
+/*PERFECT -- MIGRATING EXAMPLE TO CHATROOM DEMO
 exports.broadcastMessage = function(req,res){
 	var socketio = req.app.get('socketio'); // take out socket instance from the app container
 	
@@ -29,6 +21,7 @@ exports.broadcastMessage = function(req,res){
 	res.send('Server reached, attempting to emit broadcast');
 	
 };
+*/
 
 /**
  * Create a Compendium

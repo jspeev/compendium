@@ -1,10 +1,10 @@
 'use strict';
-/*global io:false */
-angular.module('ngfunctions').factory('Socket', ['$rootScope',
+/* globals io */
+angular.module('chatroom').factory('Socket', ['$rootScope',
 	function($rootScope) {
 
 	  var socket = io.connect();
-	  
+
 	  return {
 	    on: function (eventName, callback) {
 	      socket.on(eventName, function () {  

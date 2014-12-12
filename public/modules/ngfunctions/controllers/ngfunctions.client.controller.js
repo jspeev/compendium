@@ -5,25 +5,7 @@ angular.module('ngfunctions').controller('NgfunctionsController', ['$scope', '$s
 		
 		$scope.authentication = Authentication;
 		
-		/*
-		Socket.on('exports.create', function(body) {
-		    console.log(body);
-		});		
-		
-		//var socket = io.connect('http://localhost'); -- we have a service now
-		Socket.on('news', function (data) {
-		  console.log(data);
-		  Socket.emit('broadcast', { my: 'data' });
-		});
-
-		Socket.emit('broadcast', { my: 'data' });
-		console.log('wtf');		
-		
-		Socket.on('res',function(data){
-			console.log(data);
-		});
-		*/
-		
+		/*PERFECT -- MIGRATING EXAMPLE TO CHATROOM DEMO
 		var username = 'Jonny';
 		
 		Socket.on('exports.newMessage.user'+username,function(body){
@@ -61,6 +43,7 @@ angular.module('ngfunctions').controller('NgfunctionsController', ['$scope', '$s
 		};
 		
 		$scope.broadcastMessage('Tom','User entered socket range');
+		*/
 
 		$scope.create = function() {
 			var compendium = new Compendia({

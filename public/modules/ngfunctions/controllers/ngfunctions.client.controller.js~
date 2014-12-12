@@ -6,7 +6,6 @@ angular.module('ngfunctions').controller('NgfunctionsController', ['$scope', '$s
 		$scope.authentication = Authentication;
 		
 		/*
-		
 		Socket.on('exports.create', function(body) {
 		    console.log(body);
 		});		
@@ -23,7 +22,6 @@ angular.module('ngfunctions').controller('NgfunctionsController', ['$scope', '$s
 		Socket.on('res',function(data){
 			console.log(data);
 		});
-		
 		*/
 		
 		var username = 'Jonny';

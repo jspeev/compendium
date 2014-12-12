@@ -26,9 +26,12 @@ module.exports = function(app) {
 		res.send('Server reached, attempting to emit broadcast');
 	});
 */
+
+/*PERFECT -- MIGRATING EXAMPLE TO CHATROOM DEMO
 	app.route('/compendia/:compendiumId/broadcastMessage')
 		.post(compendia.broadcastMessage);
 	
+*/
 	// Finish by binding the compendium middleware
 	app.param('compendiumId', compendia.compendiumByID);
 };

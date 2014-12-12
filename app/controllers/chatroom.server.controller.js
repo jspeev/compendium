@@ -8,6 +8,29 @@ var mongoose = require('mongoose'),
 	Chatroom = mongoose.model('Chatroom'),
     _ = require('lodash');
 
+exports.getUserList = function(req,res){
+	
+	//req.chatroom.userList
+	
+};
+
+exports.broadcastMessage = function(req,res){
+
+	console.log('broadcast server reached from :'+req.hostname +' by user:'+req.ip);
+	
+	var socketio = req.app.get('socketio'); // take out socket instance from the app container
+	
+	if(req.body.to === 'room'){
+		socketio.sockets.emit('exports.newMessage.'+req.chatroom.id, {'from':req.body.from,'to':req.body.to,'message':req.body.message}); // emit an event for all connected clients
+		//socketio.sockets.emit('exports.newMessage.'+req.chatroom.id, req.body.message); // emit an event for all connected clients
+	}else{
+		socketio.sockets.emit('exports.newMessage.user'+req.body.to,req.body.message);
+	}
+	res.send('Server reached, attempting to emit broadcast');
+	
+};
+
+
 /**
  * Create a Chatroom
  */
@@ -29,13 +52,6 @@ exports.create = function(req, res) {
 	
 };
 
-exports.broadcastMessage = function(req,res){
-	
-	var socketio = req.app.get('socketio'); // take out socket instance from the app container
-	socketio.sockets.emit('exports.broadcastMessage', req.body); // emit an event for all connected clients
-	
-};
-
 /**
  * Show the current Chatroom
  */
@@ -47,6 +63,7 @@ exports.read = function(req, res) {
  * Update a Chatroom
  */
 exports.update = function(req, res) {
+	
 	var chatroom = req.chatroom;
 
 	chatroom = _.extend(chatroom, req.body);
@@ -119,3 +136,35 @@ exports.hasAuthorization = function(req, res, next) {
 	}
 	next();
 };
+
+/**
+ * Chatroom add user to list
+ */
+ /*
+exports.addUserToRoom = function(req,res,next){
+ 	
+ 	Chatroom.findByIdAndUpdate(req.chatroom.id,{userList:[]},function(err,chatroom){
+ 		console.log(chatroom);
+ 		next();
+ 	});
+ 	
+};
+ 	
+
+exports.removeUserFromRoom = function(req,res,next){
+	
+	req.existingUserList = req.chatroom.userList;
+	
+	for(var i=0 ; i<req.existingUserList.length ; i++){
+		if(req.existingUserList[i] === req.user.displayName){
+			req.existingUserList.splice(i,1);
+		}
+	}
+	
+	Chatroom.findByIdAndUpdate(req.chatroom.id,{userList:req.existingUserList},function(err,chatroom){
+ 		console.log(chatroom);
+ 		next();
+ 	});
+	
+};
+*/

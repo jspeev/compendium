@@ -1,0 +1,17 @@
+.messageBoard{
+	width:calc(100% - 110px);
+	height:calc(100vh - 300px);
+	overflow:auto;
+	float:left;
+}
+
+.userList{
+	width:100px;
+	float:left;
+	margin-left:10px;
+	height:calc(100vh - 300px);
+}
+
+.messageSlot{
+	bottom:0px;
+}

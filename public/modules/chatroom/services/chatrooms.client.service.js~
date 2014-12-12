@@ -1,0 +1,15 @@
+'use strict';
+
+angular.module('chatroom').factory('Chatrooms', [
+	function() {
+		// Chatrooms service logic
+		// ...
+
+		// Public API
+		return {
+			someMethod: function() {
+				return true;
+			}
+		};
+	}
+]);
