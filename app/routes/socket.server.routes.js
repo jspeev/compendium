@@ -1,14 +1,5 @@
 'use strict';
 // Keep track of which names are used so that there are no duplicates
-var express = require('express');
-var http = require('http');
-var app = express();
-var server = http.createServer(app);
-var socketio = require('socket.io');
-var io = socketio.listen(server);
-
-app.set('socketio', io);
-app.set('server', server);
 
  var userNames = (function () {
 	
@@ -59,14 +50,6 @@ app.set('server', server);
     getGuestName: getGuestName
   };
 }());
-
-io.sockets.on('connection', function (socket) {
-			console.log('socket conncected');
-		  socket.emit('news', { msg: 'world' });
-		  socket.on('broadcast', function (data) {
-		    console.log(data);
-		  });
-		});
 
 module.exports = function(socket) {
 	

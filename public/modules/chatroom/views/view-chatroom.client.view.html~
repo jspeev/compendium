@@ -1,4 +1,5 @@
-<section data-ng-controller="ChatroomController" data-ng-init="findOne()">
+<section data-ng-controller="ChatroomController" data-ng-init="findOne(); beginChat();">
+	
 	<div class="page-header">
 		<h1 data-ng-bind="chatroom.title"></h1>
 	</div>
@@ -19,9 +20,12 @@
 		</em>
 	</small>
 	<p class="lead" data-ng-bind="chatroom.description"></p>
-		<pre id="messageBoard" class="messageBoard">
-			<div id="messageRepeater" ng-repeat="message in messages">{{message.from}} to {{message.to}} : {{message.message}}</div>
-		</pre>
+	<pre id="messageBoard" class="messageBoard">
+		<div id="messageRepeater" ng-repeat="message in messages">{{message.user}} : {{message.text}}<!--{{message.from}} to {{message.to}} : {{message.message}}--></div>
+	</pre>
+	<pre class="userList">
+		<div id="userListRepeater" ng-repeat="user in users">{{user}}</div>
+	</pre>
 	<form name="inputForm" ng-submit="sendMessage()" ng-disabled="bSending">
 		<input style="width:calc(100% - 50px);" name="input" type="text" ng-model="input" required></input>
 		<a class="btn btn-primary" href="/#!/chatrooms/{{chatroom._id}}/edit">

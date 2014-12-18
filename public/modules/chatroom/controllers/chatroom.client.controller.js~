@@ -2,30 +2,20 @@
 
 angular.module('chatroom').controller('ChatroomController', ['$scope', '$stateParams', '$location','$http', '$log', 'Authentication','Socket','Chatrooms',
 	function($scope,$stateParams,$location,$http,$log,Authentication,Socket,Chatrooms) {
-
+      
 		$scope.authentication = Authentication;
 		
-		var username = $scope.authentication.user.displayName;
-		
-		io.on('connection', function(socket){
-			$log.log('join');
-		   socket.join('some room');
-		  
-		});
+		//$scope.name = $scope.authentication.user.displayName;
 		
 		$scope.bSending = false;
-		$scope.messages = [
-			{'from':'sys','to':username,'message':'Welcome!'}
-		];
+		$scope.messages = [];
 		
 		$scope.users = [];
 		
-		Socket.on('connection', function(socket){
-			$log.log('connected');
-			socket.join('room'+$stateParams.chatroomId);
-		});
+		var username = $scope.authentication.user.displayName;
+		var aryCallback = ['init','send:message','user:join','change:name','user:left'];
 		
-		/*SOCKET EMITTER*/
+		/*SOCKET EMITTER
 		Socket.on('exports.newMessage.system',function(body){
 			addToMessageBoard(body);
 		});
@@ -96,7 +86,158 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 		};
 		
 		broadcastMessage('room',username+' entered the room.');
-		///////////////////////////////////////////////////////////////
+		*///////////////////////////////////////////////////////////////
+
+
+
+
+
+
+  // Socket listeners
+  // ================
+  $scope.beginChat = function(){
+	  Socket.emit('joinRoom',{id:$stateParams.chatroomId,user:username+'_'+Math.round(Math.random()*100)},function(){$log.log('connected to:',$stateParams.chatroomId);});
+  };
+  
+  	  Socket.on('init', function (data) {
+	  	 $scope.messages=[{user:'chatroom',text:'Welcome!'}];
+	  	 $log.log('initted '+data.chatUsers);
+	    $scope.name = data.name;
+	    $scope.users = data.chatUsers;
+	    $log.log($scope.messages);
+	  });
+	  
+	  Socket.on('send:message', function (message) {
+	    $scope.messages.push(message);
+	  });
+	
+	  Socket.on('change:name', function (data) {
+	    changeName(data.oldName, data.newName);
+	  });
+	  
+	  Socket.on('user:join', function (data) {
+	  	 $log.log('new user joins: '+data.name);
+	  	 
+	  	 var bFound = false;
+	
+	  	 for (var i = 0; i < $scope.users.length; i++) {
+	  	 	console.log($scope.users[i]);
+	      if ($scope.users[i] === data.name) {
+	        bFound = true;
+	      }
+	    }
+	  	 
+	  	 if(!bFound){
+	  	 	$scope.messages.push({
+		      user: 'chatroom',
+		      text: 'User ' + data.name + ' has joined.'
+		    });
+		    $scope.users.push(data.name);
+	  	 }
+	  });
+	
+	  // add a message to the conversation when a user disconnects or leaves the room
+	  Socket.on('user:left', function (data) {
+	    $scope.messages.push({
+	      user: 'chatroom',
+	      text: 'User ' + data.name + ' has left.'
+	    });
+	    var i, user;
+	    for (i = 0; i < $scope.users.length; i++) {
+	      user = $scope.users[i];
+	      if (user === data.name) {
+	        $scope.users.splice(i, 1);
+	        break;
+	      }
+	    }
+	  });
+	
+	  // Private helpers
+	  // ===============
+	
+	  var changeName = function (oldName, newName) {
+	    // rename user in list of users
+	    var i;
+	    for (i = 0; i < $scope.users.length; i++) {
+	      if ($scope.users[i] === oldName) {
+	        $scope.users[i] = newName;
+	      }
+	    }
+	  };
+	
+	  
+	 $scope.$on('$destroy', function(){
+         Socket.emit('leave');
+         Socket.removeCallbacks(aryCallback);
+    }); 
+    
+  
+  
+  
+	  // Methods published to the scope
+	  // ==============================
+	  $scope.changeName = function () {
+	    Socket.emit('change:name', {
+	      name: $scope.newName
+	    }, function (result) {
+	      if (!result) {
+	        alert('There was an error changing your name');
+	      } else {
+	
+	        changeName($scope.name, $scope.newName);
+	
+	        $scope.name = $scope.newName;
+	        $scope.newName = '';
+	      }
+	    });
+	  };
+	
+	  $scope.sendMessage = function () {
+	    Socket.emit('send:message', {
+	      message: $scope.input
+	    });
+	    
+	    // clear message box
+	    $scope.input = '';
+	  
+	 };
+		
+  	  
+
+//$scope.newName = $scope.authentication.user.displayName;
+//$scope.changeName();
+
+/*
+		var initComm = function(){
+			
+			if($stateParams.chatroomId){
+				
+				$log.log('Attempting to connect',$stateParams.chatroomId);
+				
+				var js_data = {
+					'name':$scope.name
+				};
+				
+				$http({
+				    method: 'POST',
+				    url: 'http://localhost:3000/chatrooms/'+$stateParams.chatroomId+'/socketStart',
+				    data: js_data
+				})
+				.success(function(data,status) {
+					//DO NOTHING ON SUCCESS
+					$log.info('status code:',status,data);
+				})
+				.error(function(data,status) {
+					$log.warn('error status code:',status);
+				});
+				
+			}
+			
+		};
+		*/
+		//initComm();
+		
+		
 		
 		$scope.create = function() {
 			var chatroom = new Chatrooms({
@@ -155,5 +296,6 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 				chatroomId: $stateParams.chatroomId
 			});
 		};
+		
 	}
 ]);

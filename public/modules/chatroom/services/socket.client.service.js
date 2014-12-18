@@ -3,9 +3,14 @@
 angular.module('chatroom').factory('Socket', ['$rootScope',
 	function($rootScope) {
 
-	  var socket = io.connect();
-
+	  var socket = io.connect('http://localhost:3000');
+	  
 	  return {
+	  	 removeCallbacks: function(aryCall){
+	  	 	for(var iCall = 0 ; iCall < aryCall.length ; iCall ++){
+	  	 		socket._callbacks[aryCall[iCall]] = [];
+	  	 	}
+	  	 },
 	    on: function (eventName, callback) {
 	      socket.on(eventName, function () {  
 	        var args = arguments;
