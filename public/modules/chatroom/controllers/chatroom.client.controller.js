@@ -1,7 +1,7 @@
 'use strict';
 
-angular.module('chatroom').controller('ChatroomController', ['$scope', '$stateParams', '$location','$http', '$log', 'Authentication','Socket','Chatrooms',
-	function($scope,$stateParams,$location,$http,$log,Authentication,Socket,Chatrooms) {
+angular.module('chatroom').controller('ChatroomController', ['$scope', '$stateParams', '$location','$http', '$log', '$window', 'Authentication','Socket','Chatrooms',
+	function($scope,$stateParams,$location,$http,$log,$window,Authentication,Socket,Chatrooms) {
       
 		$scope.authentication = Authentication;
 		
@@ -13,91 +13,17 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 		$scope.users = [];
 		
 		var username = $scope.authentication.user.displayName;
-		var aryCallback = ['init','send:message','user:join','change:name','user:left'];
+		var aryCallback = ['init','send:message','user:join','change:name','user:left','expel'];
 		
-		/*SOCKET EMITTER
-		Socket.on('exports.newMessage.system',function(body){
-			addToMessageBoard(body);
-		});
-		
-		Socket.on('exports.newMessage.user'+username,function(body){
-			addToMessageBoard(body);
-		});
-		
-		Socket.on('exports.newMessage.'+$stateParams.chatroomId, function(body) {
-			addToMessageBoard(body);
-		});
-		
-		var addToMessageBoard = function(body){
-			
-			$scope.messages.push(body);
-			$scope.bSending = false;
-			$scope.input = '';
-			
-			angular.element(document.querySelector('#messageBoard')).scrollTop(9999999);
-		};
-		
-		$scope.sendMessage = function(){
-			$log.log('message pulled',$scope.input);
-			broadcastMessage('room',$scope.input);
-			$scope.bSending = true;
-		};
-		
-		$scope.getUserList = function(){
-			$http({
-				    method: 'GET',
-				    url: 'http://localhost:3000/chatrooms/'+$stateParams.chatroomId+'/userList'
-				})
-				.success(function(data,status) {
-					$log.info('status code:',status,data);
-				})
-				.error(function(data,status) {
-					$log.warn('error status code:',status);
-				});
-		};
-		
-		var broadcastMessage = function(stTo,stMessage){
-			
-			if($stateParams.chatroomId){
-				
-				$log.log('Attempting to send message',$stateParams.chatroomId);
-				
-				var js_data = {
-					'from':username,
-					'to':stTo,
-					'message':stMessage
-				};
-				
-				$http({
-				    method: 'POST',
-				    url: 'http://localhost:3000/chatrooms/'+$stateParams.chatroomId+'/broadcastMessage',
-				    data: js_data
-				})
-				.success(function(data,status) {
-					//DO NOTHING ON SUCCESS
-					//$log.info('status code:',status,data);
-				})
-				.error(function(data,status) {
-					$log.warn('error status code:',status);
-				});
-				
-			}
-			
-		};
-		
-		broadcastMessage('room',username+' entered the room.');
-		*///////////////////////////////////////////////////////////////
 
 
 
 
-
-
-  // Socket listeners
-  // ================
-  $scope.beginChat = function(){
-	  Socket.emit('joinRoom',{id:$stateParams.chatroomId,user:username+'_'+Math.round(Math.random()*100)},function(){$log.log('connected to:',$stateParams.chatroomId);});
-  };
+	  // Socket listeners
+	  // ================
+	  $scope.beginChat = function(){
+		  Socket.emit('joinRoom',{id:$stateParams.chatroomId,user:username+'_'+Math.round(Math.random()*100)},function(){$log.log('connected to:',$stateParams.chatroomId);});
+	  };
   
   	  Socket.on('init', function (data) {
 	  	 $scope.messages=[{user:'chatroom',text:'Welcome!'}];
@@ -116,11 +42,20 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 	    changeName(data.oldName, data.newName);
 	  });
 	  
+	  Socket.on('testComplete',function(data){
+	  	$log.log(data);
+	  });
+	  
+	  Socket.on('expel',function(){
+	  	 $window.alert('You have been expelled from this room');
+	  	 $location.url('/chatrooms');
+	  });	
+	
 	  Socket.on('user:join', function (data) {
 	  	 $log.log('new user joins: '+data.name);
 	  	 
 	  	 var bFound = false;
-	
+		
 	  	 for (var i = 0; i < $scope.users.length; i++) {
 	  	 	console.log($scope.users[i]);
 	      if ($scope.users[i] === data.name) {
@@ -165,8 +100,7 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 	      }
 	    }
 	  };
-	
-	  
+	 
 	 $scope.$on('$destroy', function(){
          Socket.emit('leave');
          Socket.removeCallbacks(aryCallback);
@@ -192,36 +126,49 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 	      }
 	    });
 	  };
-	
-	  $scope.sendMessage = function () {
-	    Socket.emit('send:message', {
-	      message: $scope.input
-	    });
-	    
-	    // clear message box
-	    $scope.input = '';
 	  
-	 };
+	  $scope.sendMessage = function () {
+		  	
+		  	if($scope.input.charAt(0) === '/'){
+		  		//HTTP CALL
+		  		var _func = $scope.input.substr(1,$scope.input.indexOf(' ')-1);
+		  		var _targetUser = $scope.input.substr($scope.input.indexOf(' ')+1,$scope.input.length);
+		  		
+		  		switch(_func){
+		  			case 'expel':
+		  			expelUser(_targetUser);
+		  			break;
+		  		}
+		  		
+		  	}else{
+		  		Socket.emit('send:message', {
+			      message: $scope.input
+			    });
+		  	}
+		    
+		    // clear message box
+		    $scope.input = '';
+		  
+		 };
 		
-  	  
+	  	  
+	
+		//$scope.newName = $scope.authentication.user.displayName;
+		//$scope.changeName();
 
-//$scope.newName = $scope.authentication.user.displayName;
-//$scope.changeName();
-
-/*
-		var initComm = function(){
+		var expelUser = function(exp_username){
 			
-			if($stateParams.chatroomId){
+			if(exp_username){
 				
-				$log.log('Attempting to connect',$stateParams.chatroomId);
+				$log.log('Attempting to expel user: ',exp_username);
 				
 				var js_data = {
-					'name':$scope.name
+					'username':exp_username
 				};
 				
 				$http({
 				    method: 'POST',
-				    url: 'http://localhost:3000/chatrooms/'+$stateParams.chatroomId+'/socketStart',
+				    url: 'http://localhost:3000/chatrooms/'+$stateParams.chatroomId+'/expelUser?username='+exp_username,
 				    data: js_data
 				})
 				.success(function(data,status) {
@@ -235,8 +182,6 @@ angular.module('chatroom').controller('ChatroomController', ['$scope', '$statePa
 			}
 			
 		};
-		*/
-		//initComm();
 		
 		
 		

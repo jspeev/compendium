@@ -1,15 +1,13 @@
 'use strict';
 
 var users = require('../../app/controllers/users.server.controller'),
-	chatrooms = require('../../app/controllers/chatroom.server.controller');
-	
-	var socketio = require('socket.io');
-	var http = require('http');
+	chatrooms = require('../../app/controllers/chatroom.server.controller'),
+	socketio = require('socket.io'),
+	http = require('http');
 	
 
 
 module.exports = function(app) {
-	
 	
 	// Chatroom Routes
 	app.route('/chatrooms')
@@ -20,23 +18,24 @@ module.exports = function(app) {
 		.get(users.requiresLogin,chatrooms.read)
 		.put(users.requiresLogin, chatrooms.hasAuthorization, chatrooms.update)
 		.delete(users.requiresLogin, chatrooms.hasAuthorization, chatrooms.delete);
-/*
-	app.route('/chatrooms/:chatroomId/broadcastMessage')
-		.post(chatrooms.broadcastMessage);
-	*/	
-		
-	app.route('/chatrooms/:chatroomId/socketStart')
-		.post(chatrooms.socketCommBegin);
-		
-		
-		var server = http.createServer(app);
-		var io = socketio.listen(server);
-		app.set('socketio', io);
-		app.set('server', server);
-		
-		
-		var rooms = (function(){
-		
+	
+	app.post('/chatrooms/:chatroomId/expelUser',users.requiresLogin, chatrooms.hasAuthorization, function(req,res){
+		expelUser(req.query.username);
+		res.send('user expelled');
+	});
+	
+	// Finish by binding the chatroom middleware
+	app.param('chatroomId', chatrooms.chatroomByID);
+	//////////////////////
+	
+	var server = http.createServer(app);
+	var io = socketio.listen(server);
+	
+	app.set('socketio', io);
+	app.set('server', server);
+	
+	var rooms = (function(){
+	
 		var join = function(roomId,name){
 			if (!rooms[roomId]) {
 				rooms[roomId] = [name];
@@ -68,22 +67,18 @@ module.exports = function(app) {
 	}());
 	
 	var chatUsers = (function(){
-		
-		var join = function(name,roomId){
-			if (!users[name]) {
-				users[name] = [roomId];
+		var join = function(name,roomId,socket){
+			if (!chatUsers[name]) {
+				chatUsers[name] = [roomId];
 			}else{
-				users[name].push(roomId);
+				chatUsers[name].push(roomId);
 			}
+			chatUsers[name][roomId] = socket;
 		};
 		
 		var leave = function(name,roomId){
-			if(users[name]){
-				for(var iRoom = 0 ; iRoom < users[name].length; iRoom ++){
-					if(users[name][iRoom] === roomId){
-						users[name].splice(iRoom,1);
-					}
-				}
+			if(chatUsers[name][roomId]){
+				delete chatUsers[name][roomId];
 			}
 		};
 		
@@ -108,7 +103,6 @@ module.exports = function(app) {
 	  var getGuestName = function () {
 	    var name,
 	      nextUserId = 1;
-	
 	    do {
 	      name = 'Guest ' + nextUserId;
 	      nextUserId += 1;
@@ -142,6 +136,21 @@ module.exports = function(app) {
 	  
 	}());
 		
+		
+		var roomId;
+		
+	  function expelUser(exp_username){
+	  		if(roomId){
+	  			chatUsers[exp_username][roomId].emit('expel');
+	  			chatUsers[exp_username][roomId].leave('/room/'+roomId);
+				chatUsers.leave(exp_username,roomId);
+				
+		  		rooms.leave(roomId,exp_username);
+		  		roomId = null;
+		  		
+	  		}
+	  }
+		
 	
 	io.sockets.on('connection', function (socket) {
 
@@ -150,31 +159,30 @@ module.exports = function(app) {
 		
     	console.log('New connection from: '+clientIp);
     	
-		var roomId;
 		var name = userNames.getGuestName();
-	  
+		
 		function joinRoom(){
 	  		socket.join('/room/'+roomId);
-	  		users.join(name,roomId);
+	  		chatUsers.join(name,roomId,socket);
 	  		rooms.join(roomId,name);
-	  }
+	   }
 	  
-	  function leaveRoom(){
+	   function leaveRoom(){
 	  		if(roomId){
 	  			console.log('leaving room:'+roomId);
 	  			socket.leave('/room/'+roomId);
-				users.leave(name,roomId);
+				chatUsers.leave(name,roomId);
 		  		rooms.leave(roomId,name);
 		  		roomId = null;
 		  		console.log(socket.rooms);
 	  		}
 	  	}
-	  
-	  socket.on('joinRoom',function(data){
+	  	
+	   
+	   socket.on('joinRoom',function(data){
 	  		
 			leaveRoom();
 			
-	  		
 	  		roomId = data.id;
 	  		//name = data.user;
 	  		
@@ -185,7 +193,7 @@ module.exports = function(app) {
 			// send the new user their name and a list of users
 			socket.emit('init', {
 				name: name,
-				users: rooms.getUsers(roomId)
+				chatUsers: rooms.getUsers(roomId)
 			});
 		  
 		  // notify other clients that a new user has joined
@@ -203,7 +211,7 @@ module.exports = function(app) {
 		    });
 		});
 		
-		 // validate a user's name change, and broadcast it on success
+		// validate a user's name change, and broadcast it on success
 	  socket.on('change:name', function (data, fn) {
 	    if (userNames.claim(data.name)) {
 	    	
@@ -249,11 +257,4 @@ module.exports = function(app) {
 	  
 	});
 		
-		/*
-	app.route('/chatrooms/:chatroomId/userList')
-		.get(chatrooms.getUserList);
-*/
-	// Finish by binding the chatroom middleware
-	app.param('chatroomId', chatrooms.chatroomByID);
-	
 }; 
